@@ -111,33 +111,28 @@ namespace BackpackСode
 				{
 					Ans.Add(Prev[restrv]);
 					restrv -= (int)Prev[restrv];
-				}
+				}	
+				Ans = Ans.Distinct().ToList();
 
-				
-				
 
 				foreach (var item in Ans)
 				{
+				
 					for (int i = 0; i < Posld.Length; i++)
 					{
 						if (item == Posld[i])
 							Console.Write("1");
 						else
 							Console.Write("0");
+
 					}
 
 				}
-
+				Console.WriteLine();
 			}
-			
-
-
-
 
 			int Nrevers = (int)Delta_revers(num, M);
 			string Result = "";
-
-
 
 			for (int i = 0; i < codes.Length; i++)
 			{
