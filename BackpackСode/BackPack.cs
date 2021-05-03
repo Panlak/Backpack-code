@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 namespace BackpackСode
@@ -7,33 +8,13 @@ namespace BackpackСode
 	{
 		static void Main(string[] args)
 		{
-			int[] B = new int[] { 1, 50, 100 };
-			int S = 100;
-			double Inf = Math.Pow(10, 6);
-
-			double[] F = new double[S + 1];
-
-			for (int i = 1; i < F.Length; i++)
-				F[i] = Inf;
-
-			for (int i = 0; i < F.Length; i++)
-			{
-				for (int j = 0; j < B.Length; j++)
-				{
-					if (i - B[j] >= 0 && F[i - B[j]] < F[i])
-						F[i] = F[i - B[j]];
-				}
-				F[i] += 1;
-			}
-			Console.WriteLine(F[S]);
 
 
 
 
 
-
-			int[] Posld = new int[] { 2, 3, 6, 13, 27, 52,66,87 };
-			int M = (B.Sum() + 40);
+			int[] Posld = new int[] { 2, 3, 6, 13, 27, 52, 66, 87};
+			int M = (Posld.Sum() + 40);
 			int num = 1;
 			int[] Normalsequence = new int[Posld.Length];
 			while (num == 1)
@@ -61,25 +42,115 @@ namespace BackpackСode
 			Console.WriteLine();
 			Console.WriteLine("Ведіть слово котре хочете зашифрувати");
 			string str = Console.ReadLine();
-			string code = " ";
+
+
+			string[] codes = new string[str.Length];
+			int index = -1;
+
 			foreach (byte b in System.Text.Encoding.Unicode.GetBytes(str))
 			{
+				
 				int res = 0;	
-				string s  = Convert.ToString(b, 2).PadLeft(8, '0');
+				string s  = Convert.ToString(b, 2);
 				for (int i = 0; i < s.Length; i++)								
 					if (s[i] == '1')									
 						res += Normalsequence[i];
-
+					
 				if (res != 0)
 				{
-					Console.WriteLine(s);
-					Console.WriteLine(res);
-					code += res + " ";
+					index++;
+					codes[index] = res.ToString();
 				}
+				
 			}
 
-			Console.WriteLine(code);
+			for (int i = 0; i < codes.Length; i++)
+			{
+				Console.WriteLine(codes[i]);
+			}
+
+			
+			for (int k = 0; k < codes.Length; k++)
+			{
+				
+				int S = Convert.ToInt32(codes[k]);
+				double Inf = Math.Pow(10, 6);
+
+				double[] F = new double[S + 1];
+				double[] Prev = new double[S + 1];
+				for (int i = 1; i < F.Length; i++)
+					F[i] = Inf;
+
+
+				for (int i = 0; i < Prev.Length; i++)
+				{
+					Prev[i] = -1;
+				}
+
+				for (int i = 0; i < F.Length; i++)
+				{
+					for (int j = 0; j < Posld.Length; j++)
+					{
+						if (i - Posld[j] >= 0 && F[i - Posld[j]] < F[i])
+						{
+							F[i] = F[i - Posld[j]];
+							Prev[i] = Posld[j];
+						}
+					}
+					F[i] += 1;
+				}
+				
+				int restrv  = S;
+				
+				Console.WriteLine(codes[k]);
+				
+				List<double> Ans = new List<double>();
+				
+				
+				while (restrv > 0)
+				{
+					Ans.Add(Prev[restrv]);
+					restrv -= (int)Prev[restrv];
+				}
+
+				
+				
+
+				foreach (var item in Ans)
+				{
+					for (int i = 0; i < Posld.Length; i++)
+					{
+						if (item == Posld[i])
+							Console.Write("1");
+						else
+							Console.Write("0");
+					}
+
+				}
+
+			}
+			
+
+
+
+
+			int Nrevers = (int)Delta_revers(num, M);
+			string Result = "";
+
+
+
+			for (int i = 0; i < codes.Length; i++)
+			{
+
+				Result = mod((Convert.ToInt32(codes[i]) * Nrevers),M) + " ";
+
+				Console.Write(Convert.ToString( Convert.ToInt32(Result),2)+ " ");
+			}
+
+
 		}
+		
+
 		static double mod(double x, double m)
 		{
 			return (x % m + m) % m;
