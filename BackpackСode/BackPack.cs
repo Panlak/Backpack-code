@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
 namespace BackpackСode
 {
 	class BackPack
@@ -13,15 +14,15 @@ namespace BackpackСode
 
 
 
-			int[] Posld = new int[] { 2, 3, 6, 13, 27, 52, 66, 87};
+			List<int> Posld = new List<int>(){ 2, 3, 6, 13, 27, 52, 66, 87 };
 			Console.WriteLine("Послідовність");
-			for (int i = 0; i < Posld.Length; i++)
+			foreach (var item in Posld)
 			{
-				Console.Write(Posld[i] + " ");
+				Console.WriteLine(item);
 			}
 			int M = (Posld.Sum() + 40);
 			int num = 1;
-			int[] Normalsequence = new int[Posld.Length];
+			int[] Normalsequence = new int[Posld.Count];
 			while (num == 1)
 			{
 				try
@@ -48,31 +49,22 @@ namespace BackpackСode
 			Console.WriteLine();
 			Console.WriteLine("Ведіть слово котре хочете зашифрувати");
 			string str = Console.ReadLine();
-			
 
+			Console.WriteLine();
 			int[] codes = new int[str.Length];
-			int index = -1;
+			string[] binary_code = StringToBinary(str).Split(" ");
 
-
-		
-			Console.WriteLine("-----------------------------------------");
-			foreach (byte b in System.Text.Encoding.Unicode.GetBytes(str))
+			for (int j = 0; j < codes.Length; j++)
 			{
-				
-				int res = 0;
-				string s = Convert.ToString(b, 2).PadLeft(8, '0');
-				Console.WriteLine(s);
-				for (int i = 0; i < s.Length; i++)
+				Console.WriteLine(binary_code[j]);
+				for (int i = 0; i < binary_code[j].Length; i++)
 				{
-					if (s[i].ToString() == "1")
-						res += Normalsequence[i];
-				}													
-				if (res != 0)
-				{
-					index++;
-					codes[index] = res;
-				}			
+					if (binary_code[j][i].ToString() == "1")
+						codes[j] += Normalsequence[i];
+				}
 			}
+
+
 			Console.WriteLine("Шифр послідовність");
 			for (int i = 0; i < codes.Length; i++)
 			{
@@ -80,76 +72,178 @@ namespace BackpackСode
 			}
 
 			Console.WriteLine("Розшифрування");
-			int Nrevers = (int)Delta_revers(num, M);
 
+
+
+			int Nrevers = (int)Delta_revers(num, M);
 			for (int k = 0; k < codes.Length; k++)
 			{
 				List<double> Ans = new List<double>();
 				int code = mod(codes[k] * Nrevers, M);
 				Console.WriteLine(code);
 				Ans = getPosld(Posld, code, Ans);
-		
+
 				int h = 0;
 				foreach (var item in Ans)
-				{				
-					for (int i = h; i < Posld.Length; i++)
-					{					
+				{
+					for (int i = h; i < Posld.Count; i++)
+					{
 						if (item == Posld[i])
 						{
 							Console.Write(@"1");
-							h = i+1;
+							h = i + 1;
 							break;
 						}
-						else		
+						else
 							Console.Write("0");
-									
+
 					}
-					
+
 				}
 				Console.WriteLine();
-				
+
 			}
 			Console.WriteLine();
-			
+
+
+
+
+
 		}
 
-		static List<double> getPosld(int[] Normalsequence, int code, List<double> Ans)
+
+
+
+		public static string StringToBinary(string data)
 		{
+			StringBuilder sb = new StringBuilder();
+
+			foreach (char c in data.ToCharArray())
+			{
+				sb.Append(Convert.ToString(c, 2).PadLeft(8, '0')).Append(' ');
+			}
+			return sb.ToString();
+		}
+
+
+		static List<double> getPosld(List<int> A, int code, List<double> Ans)
+		{
+
 			int S = Convert.ToInt32(code);
-			double Inf = Math.Pow(10, 6);
-
-			double[] F = new double[S + 1];
-			double[] Prev = new double[S + 1];
-			for (int i = 1; i < F.Length; i++)
-				F[i] = Inf;
-
-
-			for (int i = 0; i < Prev.Length; i++)
+			int index = -1;
+			List<int> A_new = new List<int>();
+			foreach (var item in A)
 			{
-				Prev[i] = -1;
+				A_new.Add(item);
 			}
-
-			for (int i = 0; i < F.Length; i++)
+			int len = A.Count - 1;
+			while(Ans.Sum() != S)
 			{
-				for (int j = 0; j < Normalsequence.Length; j++)
+				
+				 if (S - A_new[len] > 0)
 				{
-					if (i - Normalsequence[j] >= 0 && F[i - Normalsequence[j]] < F[i])
+					for ( int j = 0; j < A_new.Count; j++)
 					{
-						F[i] = F[i - Normalsequence[j]];
-						Prev[i] = Normalsequence[j];
+						if (A_new[j] + A_new[len]  > S)
+						{
+							if (A_new[j] < A_new[len])
+								A_new.RemoveAt(j);
+							else
+								A_new.RemoveAt(len);
+							break;
+						}				
+						
+						
 					}
+					if (A_new.Contains(A[len]) & A[len] != Ans.LastOrDefault() & Ans.Sum() + A[len] <= S)
+						Ans.Add(A[len]);
+					index++;
+
 				}
-				F[i] += 1;
+
+				len--;
+				if (len < 0)
+					break;
 			}
 
-			int restrv = S;
 
-			while (restrv > 0)
-			{
-				Ans.Add(Prev[restrv]);
-				restrv -= (int)Prev[restrv];
-			}
-			return Ans.Distinct().ToList();
+
+
+
+
+			//for (int i = A.Length-1; i > -1; i--)
+			//{
+				
+			
+			//	if (Ans.Sum() != S)
+			//	{
+			//		if (S - A[i] > 0)
+			//		{
+
+			//			Ans.Add(A[i]);
+			//			index++;
+
+			//		}
+
+			//	}
+			//	else
+			//	{
+			//		i++;
+			//		Ans.RemoveAt(index);
+			//		index--;
+				
+			//	}
+				
+
+			//}
+			
+			
+			return Ans.OrderBy(x => x).ToList();
+
+
+
+
+
+
+			//double Inf = Math.Pow(10, 6);
+
+			//double[] F = new double[S + 1];
+			//double[] Prev = new double[S + 1];
+			//for (int i = 1; i < F.Length; i++)
+			//	F[i] = Inf;
+
+
+			//for (int i = 0; i < Prev.Length; i++)
+			//{
+			//	Prev[i] = -1;
+			//}
+
+			//for (int i = 0; i < F.Length; i++)
+			//{
+			//	for (int j = 0; j < A.Length; j++)
+			//	{
+			//		if (i - A[j] >= 0 && F[i - A[j]] < F[i])
+			//		{
+			//			F[i] = F[i - A[j]];
+			//			Prev[i] = A[j];
+			//		}
+			//	}
+			//	F[i] += 1;
+			//}
+
+			//int restrv = S;
+
+			//while (restrv > 0)
+			//{
+
+			//	Ans.Add(Prev[restrv]);
+			//	if (!Ans.Contains(Prev[restrv]))
+			//		restrv -= (int)Prev[restrv];
+			//	else
+			//		restrv -= (int)Prev[restrv];
+
+			//}
+			//return Ans.Distinct().ToList();
 		}
 
 
