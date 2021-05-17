@@ -7,14 +7,27 @@ namespace BackpackСode
 {
 	class BackPack
 	{
+		static Random random = new Random();
 		static void Main(string[] args)
 		{
+		
+			
+
+			List<int> Posld = new List<int>();
+
+			
+			int count = 13;
+			int t = 0;
+			for (int i = 1; i < count+1; i++)
+			{
+				if (i == 1)
+					t = Convert.ToInt32(Math.Pow(i, 2) + i + 1);
+				else t *= 2;
+
+				Posld.Add(t);
+			}
 
 
-
-
-
-			List<int> Posld = new List<int>(){ 2, 3, 6, 13, 27, 52, 66, 87 };
 			Console.WriteLine("Послідовність");
 			foreach (var item in Posld)
 			{
@@ -22,12 +35,12 @@ namespace BackpackСode
 			}
 			int M = (Posld.Sum() + 40);
 			int num = 1;
-			int[] Normalsequence = new int[Posld.Count];
+			List<int> Normalsequence = new List<int>();
 			while (num == 1)
 			{
 				try
 				{
-					Random random = new Random();
+					
 					num = random.Next(num, M);
 					if (IsCoprime(num, M))
 					{
@@ -41,9 +54,9 @@ namespace BackpackСode
 			Console.WriteLine("Num = " + num);
 
 			Console.WriteLine("Надзростаюча послідовність");
-			for (int i = 0; i < Normalsequence.Length; i++)
+			for (int i = 0; i < Posld.Count; i++)
 			{
-				Normalsequence[i] = (int)mod(Posld[i] * num, M);
+				Normalsequence.Add((int)mod(Posld[i] * num, M));
 				Console.Write(Normalsequence[i] + " ");
 			}
 			Console.WriteLine();
@@ -57,13 +70,13 @@ namespace BackpackСode
 			for (int j = 0; j < codes.Length; j++)
 			{
 				Console.WriteLine(binary_code[j]);
+				
 				for (int i = 0; i < binary_code[j].Length; i++)
 				{
-					if (binary_code[j][i].ToString() == "1")
-						codes[j] += Normalsequence[i];
+					
+					codes[j] += Convert.ToInt32((binary_code[j][i].ToString())) * Normalsequence[i];
 				}
 			}
-
 
 			Console.WriteLine("Шифр послідовність");
 			for (int i = 0; i < codes.Length; i++)
@@ -74,43 +87,46 @@ namespace BackpackСode
 			Console.WriteLine("Розшифрування");
 
 
+			StringBuilder sb = new StringBuilder();
 
 			int Nrevers = (int)Delta_revers(num, M);
 			for (int k = 0; k < codes.Length; k++)
 			{
 				List<double> Ans = new List<double>();
 				int code = mod(codes[k] * Nrevers, M);
-				Console.WriteLine(code);
 				Ans = getPosld(Posld, code, Ans);
-
 				int h = 0;
+				
 				foreach (var item in Ans)
 				{
 					for (int i = h; i < Posld.Count; i++)
 					{
 						if (item == Posld[i])
 						{
-							Console.Write(@"1");
-							h = i + 1;
+							sb.Append("1");
+							h = i + 1;			
 							break;
+							
 						}
-						else
-							Console.Write("0");
-
+						else { sb.Append("0");h--; }
 					}
-
-				}
-				Console.WriteLine();
-
+								
+				}			
+				if(k < codes.Length-1)
+				sb.Append(" ");			
 			}
-			Console.WriteLine();
+	
+			string result = "";
+			foreach (string code in sb.ToString().Split(" "))
+			{
+				string decode  = code.PadRight(8, '0');
+				int translate = Convert.ToInt32(decode,2);
+				result += (char)translate;		
+			}
 
-
-
-
+			Console.WriteLine(result);
 
 		}
-
 
 
 
@@ -125,125 +141,45 @@ namespace BackpackСode
 			return sb.ToString();
 		}
 
+		public static string StringToHexidecimal(string data)
+		{
+			StringBuilder sb = new StringBuilder();
+
+			foreach (char c in data.ToCharArray())
+			{
+				sb.Append(Convert.ToString(c, 16).PadLeft(8, '0')).Append(' ');
+			}
+			return sb.ToString();
+		}
+
+
+
 
 		static List<double> getPosld(List<int> A, int code, List<double> Ans)
 		{
 
 			int S = Convert.ToInt32(code);
-			int index = -1;
-			List<int> A_new = new List<int>();
-			foreach (var item in A)
+
+			A = A.OrderBy(x => x).ToList();
+			int x = -1;
+
+			for (int i = A.Count - 1; i > -1; i--)
 			{
-				A_new.Add(item);
-			}
-			int len = A.Count - 1;
-			while(Ans.Sum() != S)
-			{
-				
-				 if (S - A_new[len] > 0)
+				if (S >= A[i] & x < 0 )
 				{
-					for ( int j = 0; j < A_new.Count; j++)
-					{
-						if (A_new[j] + A_new[len]  > S)
-						{
-							if (A_new[j] < A_new[len])
-								A_new.RemoveAt(j);
-							else
-								A_new.RemoveAt(len);
-							break;
-						}				
-						
-						
-					}
-					if (A_new.Contains(A[len]) & A[len] != Ans.LastOrDefault() & Ans.Sum() + A[len] <= S)
-						Ans.Add(A[len]);
-					index++;
 
+					x = S - A[i];
+					Ans.Add(A[i]);
 				}
-
-				len--;
-				if (len < 0)
-					break;
+				else
+				if (x >= A[i] & Ans.Sum() != S)
+				{
+					x = x - A[i];
+					Ans.Add(A[i]);
+				}
 			}
-
-
-
-
-
-
-			//for (int i = A.Length-1; i > -1; i--)
-			//{
-				
-			
-			//	if (Ans.Sum() != S)
-			//	{
-			//		if (S - A[i] > 0)
-			//		{
-
-			//			Ans.Add(A[i]);
-			//			index++;
-
-			//		}
-
-			//	}
-			//	else
-			//	{
-			//		i++;
-			//		Ans.RemoveAt(index);
-			//		index--;
-				
-			//	}
-				
-
-			//}
-			
-			
 			return Ans.OrderBy(x => x).ToList();
 
-
-
-
-
-
-			//double Inf = Math.Pow(10, 6);
-
-			//double[] F = new double[S + 1];
-			//double[] Prev = new double[S + 1];
-			//for (int i = 1; i < F.Length; i++)
-			//	F[i] = Inf;
-
-
-			//for (int i = 0; i < Prev.Length; i++)
-			//{
-			//	Prev[i] = -1;
-			//}
-
-			//for (int i = 0; i < F.Length; i++)
-			//{
-			//	for (int j = 0; j < A.Length; j++)
-			//	{
-			//		if (i - A[j] >= 0 && F[i - A[j]] < F[i])
-			//		{
-			//			F[i] = F[i - A[j]];
-			//			Prev[i] = A[j];
-			//		}
-			//	}
-			//	F[i] += 1;
-			//}
-
-			//int restrv = S;
-
-			//while (restrv > 0)
-			//{
-
-			//	Ans.Add(Prev[restrv]);
-			//	if (!Ans.Contains(Prev[restrv]))
-			//		restrv -= (int)Prev[restrv];
-			//	else
-			//		restrv -= (int)Prev[restrv];
-
-			//}
-			//return Ans.Distinct().ToList();
 		}
 
 
